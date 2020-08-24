@@ -1,6 +1,6 @@
 const inquirer = require("inquirer");
-const fs = require("fs");
 const { async } = require("rxjs");
+const fs = require("fs").promises;
 
 // fs.readFile("./passwords.json", "utf8", (err, data) => {
 //   if (err) {
@@ -11,10 +11,6 @@ const { async } = require("rxjs");
 //   console.log(data);
 // });
 
-async function getPasswords() {
-    const passwords = await.fs.readFile("./passwords.json", "utf-8");
-    console.log(passwords)
-}
 const questions = [
   {
     type: "password",
@@ -27,12 +23,18 @@ const questions = [
     message: "Which password do you need",
   },
 ];
-inquirer.prompt(questions).then((answers) => {
+inquirer.prompt(questions).then(async (answers) => {
   console.log(`Your password is ${answers.password}!`);
   if (answers.password === "123") {
+    console.log("Master Password is correct!");
+    try {
+      const passwordJSON = await fs.readFile("./passwords.json", "utf-8");
+      const passwords = JSON.parse(passwordJSON);
+      console.log(`Your ${answers.key} password is ${passwords[answers.key]}`);
+    } catch (error) {
+      console.error("Something went wrong.");
+    }
   } else {
-    console.log("Password is incorrect!");
+    console.log("Master Password is incorrect!");
   }
-
-  console.log(`You like to know the password of ${answers.key}!`);
 });
