@@ -1,0 +1,28 @@
+{
+  "name": "awesome-password",
+  "version": "1.0.0",
+  "description": "Password Manager Example",
+  "main": "cli.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "bcrypt": "^5.0.0",
+    "inquirer": "^7.3.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mskradde/awesome-password.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mskradde/awesome-password/issues"
+  },
+  "homepage": "https://github.com/mskradde/awesome-password#readme"
+}
