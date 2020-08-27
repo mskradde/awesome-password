@@ -7,7 +7,7 @@ const port = 3000;
 
 app.get("/", (request, response) => {
   console.log("Request /");
-  response.send("Request succeeded");
+  response.send("Request apple");
 });
 
 app.listen(port, () => {
