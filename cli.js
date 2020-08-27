@@ -1,3 +1,4 @@
+require("dotenv").config();
 const {
   askStartQuestions,
   askGetPasswordQuestions,
@@ -14,20 +15,17 @@ const {
 } = require("./lib/passwords");
 const { MongoClient } = require("mongodb");
 
-const uri =
-  "mongodb+srv://mskradde:8j6yNdVqwQxuZLs@development.jgwho.mongodb.net/?retryWrites=true&w=majority";
-
-const client = new MongoClient(uri);
+const client = new MongoClient(process.env.Mongo_URI);
 
 async function main() {
   try {
     await client.connect();
-    const database = client.db("awesome-passwords");
+    const database = client.db(process.env.Mongo_DB_NAME);
     const collection = database.collection("passwords");
 
     const { masterPassword, action } = await askStartQuestions();
-    const originalMasterPassword = await readMasterPassword();
 
+    const originalMasterPassword = await readMasterPassword();
     if (!originalMasterPassword) {
       const { newMasterPassword } = await askForNewMasterPassword();
       await writeMasterPassword(newMasterPassword);
@@ -52,10 +50,9 @@ async function main() {
       const { key, password } = await askSetPasswordQuestions();
       await writePassword(key, password, masterPassword);
       console.log(`New Password set`);
-    } finally {
-      await client.close();
     }
-   
+  } finally {
+    await client.close();
   }
 }
 
