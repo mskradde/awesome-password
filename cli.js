@@ -13,47 +13,60 @@ const {
   readMasterPassword,
   writeMasterPassword,
 } = require("./lib/passwords");
+const { encrypt, decrypt, createHash, verifyHash } = require("./lib/crypto");
 const { MongoClient } = require("mongodb");
 
-const client = new MongoClient(process.env.Mongo_URI);
+const client = new MongoClient(process.env.MONGO_URI);
 
 async function main() {
   try {
     await client.connect();
     const database = client.db(process.env.Mongo_DB_NAME);
-    const collection = database.collection("passwords");
 
-    const { masterPassword, action } = await askStartQuestions();
 
     const originalMasterPassword = await readMasterPassword();
     if (!originalMasterPassword) {
       const { newMasterPassword } = await askForNewMasterPassword();
-      await writeMasterPassword(newMasterPassword);
+      const hashedMasterPassword = createHash(newMasterPassword);
+      await writeMasterPassword(hashedMasterPassword);
+      console.log("Master Password set!");
       return;
     }
-    if (masterPassword !== originalMasterPassword) {
+
+    const { masterPassword, action } = await askStartQuestions();
+
+    if (!verifyHash(masterPassword, originalMasterPassword)) {
       console.log("Master Password is incorrect!");
       return;
     }
 
+    console.log("Master Password is correct!");
     if (action === CHOICE_GET) {
       console.log("Now Get a password");
       const { key } = await askGetPasswordQuestions();
       try {
-        const password = await readPassword(key, masterPassword);
-        console.log(`Your ${key} password is ${password}`);
+        const encryptedPassword = await readPassword(key, database);
+        const password = decrypt(encryptedPassword, masterPassword);
+
+    console.log(`Your ${key} password is ${password}`);
       } catch (error) {
-        console.error("Something went wrong 😑");
+        console.error("Something went wrong 😑", error);
+        // What to do now?
       }
     } else if (action === CHOICE_SET) {
       console.log("Now Set a password");
-      const { key, password } = await askSetPasswordQuestions();
-      await writePassword(key, password, masterPassword);
-      console.log(`New Password set`);
-    }
+      try {
+        const { key, password } = await askSetPasswordQuestions();
+        const encryptedPassword = encrypt(password, masterPassword);
+        await writePassword(key, encryptedPassword, database);
+        console.log(`New Password set`);
+      } catch (error) {
+        console.error("Something went wrong 😑");
+        
+      }
+    }	    }
   } finally {
-    await client.close();
+    
+  await client.close();
   }
 }
-
-main();
